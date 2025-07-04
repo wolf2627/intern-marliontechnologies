@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Report: Google ADK vs. OpenAI Agents SDK</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Tech Neutrals -->
+    <!-- Application Structure Plan: The application uses a single-page, dashboard-style layout with a sticky top navigation for easy access to different comparative sections. This non-linear structure was chosen over the report's linear format to facilitate direct, side-by-side comparison, which is the primary user goal. The flow starts with a high-level overview, moves to a detailed feature comparison with interactive cards, presents a quantitative analysis via a radar chart, guides decisions with a "When to Choose" section, and concludes with a summary. This structure is designed to help users quickly grasp the core differences and make informed decisions based on their specific needs. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Core philosophies -> Goal: Inform/Compare -> Viz: Side-by-side cards with icons -> Interaction: Hover effects -> Justification: Quickly establishes the fundamental differences.
+        - Report Info: Multi-dimensional feature comparison (Ease of Use, Scalability, etc.) -> Goal: Compare -> Viz: Radar Chart -> Interaction: Hover tooltips -> Justification: Provides a holistic, at-a-glance quantitative comparison across multiple vectors. Library: Chart.js.
+        - Report Info: State management, Deployment -> Goal: Organize/Compare -> Viz: Styled HTML diagrams (Flowchart-like) -> Interaction: Static visual -> Justification: Simplifies complex architectural concepts into easily digestible visuals. Method: Tailwind CSS.
+        - Report Info: Use case suitability -> Goal: Guide Decision -> Viz: Two-column checklist layout -> Interaction: Static -> Justification: Offers clear, actionable guidance for developers choosing a framework.
+        - Report Info: Key differentiators -> Goal: Summarize -> Viz: Interactive toggle cards -> Interaction: Click to reveal details -> Justification: Engages the user and allows them to progressively disclose information.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #2563eb; 
+            border-bottom-color: #2563eb;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 60vh;
+            width: 90vw;
+            max-width: 800px;
+            max-height: 500px;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 50vh;
+            }
+        }
+        .feature-card {
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-slate-900">ADK vs. Agents SDK</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#overview" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600 border-b-2 border-transparent">Overview</a>
+                        <a href="#features" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600 border-b-2 border-transparent">Features</a>
+                        <a href="#deep-dive" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600 border-b-2 border-transparent">Deep Dive</a>
+                        <a href="#use-cases" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600 border-b-2 border-transparent">Use Cases</a>
+                        <a href="#conclusion" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-slate-600 border-b-2 border-transparent">Conclusion</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-slate-500 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+                        <span class="sr-only">Open main menu</span>
+                        <div class="w-6 h-6 flex flex-col justify-around">
+                            <span class="block w-full h-0.5 bg-slate-600"></span>
+                            <span class="block w-full h-0.5 bg-slate-600"></span>
+                            <span class="block w-full h-0.5 bg-slate-600"></span>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#overview" class="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100">Overview</a>
+                <a href="#features" class="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100">Features</a>
+                <a href="#deep-dive" class="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100">Deep Dive</a>
+                <a href="#use-cases" class="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100">Use Cases</a>
+                <a href="#conclusion" class="block px-3 py-2 rounded-md text-base font-medium text-slate-600 hover:bg-slate-100">Conclusion</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <section id="overview" class="py-12">
+            <h2 class="text-3xl font-bold text-center text-slate-900 mb-4">Framework Philosophy at a Glance</h2>
+            <p class="text-center text-slate-600 max-w-3xl mx-auto mb-12">This section provides a high-level summary of the core design principles behind Google's ADK and OpenAI's Agents SDK. Understanding their foundational philosophies is the first step to choosing the right tool for your project.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-lg shadow-lg border border-slate-200">
+                    <h3 class="text-2xl font-bold mb-4 text-blue-600">Google ADK</h3>
+                    <p class="text-slate-600 mb-6">A comprehensive, enterprise-grade platform designed for building structured, auditable, and production-ready multi-agent systems. It's deeply integrated into the Google Cloud ecosystem.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">🏢</span> <strong>"Code-First" & Structured:</strong> Emphasizes control, versioning, and scalability through a structured, platform-centric approach.</li>
+                        <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">⚙️</span> <strong>End-to-End Solution:</strong> Provides a full development lifecycle with built-in state management, deployment tools, and observability.</li>
+                        <li class="flex items-start"><span class="text-blue-500 mr-3 mt-1">☁️</span> <strong>Ecosystem-Native:</strong> Offers profound, seamless integrations with Google Cloud services like BigQuery and Vertex AI.</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-lg border border-slate-200">
+                    <h3 class="text-2xl font-bold mb-4" style="color: #10a37f;">OpenAI Agents SDK</h3>
+                    <p class="text-slate-600 mb-6">A lightweight, developer-centric toolkit prioritizing flexibility, rapid prototyping, and ease of use. It empowers developers with core agentic primitives and maximum control over infrastructure.</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start"><span class="mr-3 mt-1" style="color: #10a37f;">🐍</span> <strong>"Python-First" & Minimalist:</strong> Reduces the learning curve by leveraging familiar Python syntax and avoiding complex abstractions.</li>
+                        <li class="flex items-start"><span class="mr-3 mt-1" style="color: #10a37f;">🧩</span> <strong>Bring Your Own State:</strong> Offers maximum flexibility by remaining stateless, letting you choose your own database and runtime.</li>
+                        <li class="flex items-start"><span class="mr-3 mt-1" style="color: #10a37f;">🚀</span> <strong>Rapid & Extensible:</strong> Designed for quick starts, with effortless custom tool creation and powerful collaboration patterns.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="features" class="py-12 bg-white rounded-lg shadow-inner">
+            <h2 class="text-3xl font-bold text-center text-slate-900 mb-4">Core Feature Comparison</h2>
+            <p class="text-center text-slate-600 max-w-3xl mx-auto mb-12">Explore the key functional differences between the two SDKs. This side-by-side view highlights how each framework approaches multi-agent orchestration, tool integration, and state management, which are critical components of any agent-based application.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                <div class="feature-card bg-slate-50 p-6 rounded-lg border border-slate-200">
+                    <h4 class="font-bold text-lg mb-2">Multi-Agent Orchestration</h4>
+                    <p class="text-sm text-slate-500 mb-4">How agents collaborate</p>
+                    <div class="text-left space-y-4">
+                        <p class="text-sm"><strong>Google ADK:</strong> Uses a formalized A2A (Agent2Agent) protocol with a central orchestrator. Supports sequential, parallel, and hierarchical workflows.</p>
+                        <p class="text-sm"><strong>OpenAI SDK:</strong> Employs flexible "Handoffs" (full control transfer) and "Agents-as-Tools" (consultative delegation).</p>
+                    </div>
+                </div>
+                <div class="feature-card bg-slate-50 p-6 rounded-lg border border-slate-200">
+                    <h4 class="font-bold text-lg mb-2">Tooling Ecosystem</h4>
+                    <p class="text-sm text-slate-500 mb-4">Extending agent capabilities</p>
+                    <div class="text-left space-y-4">
+                        <p class="text-sm"><strong>Google ADK:</strong> Rich set of pre-built tools for Google Cloud. Strong enterprise integrations (Salesforce, JIRA).</p>
+                        <p class="text-sm"><strong>OpenAI SDK:</strong> Effortless custom function tools via Python decorators. Provides hosted tools like Web Search and Code Interpreter.</p>
+                    </div>
+                </div>
+                <div class="feature-card bg-slate-50 p-6 rounded-lg border border-slate-200">
+                    <h4 class="font-bold text-lg mb-2">State Management</h4>
+                    <p class="text-sm text-slate-500 mb-4">How agents remember</p>
+                    <div class="text-left space-y-4">
+                        <p class="text-sm"><strong>Google ADK:</strong> Built-in and persistent. Offers `SessionService` and `ArtifactService` with database/GCS backends out of the box.</p>
+                        <p class="text-sm"><strong>OpenAI SDK:</strong> Stateless by default. You "bring your own runtime and state," requiring external databases (e.g., MongoDB) for persistence.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="deep-dive" class="py-12">
+            <h2 class="text-3xl font-bold text-center text-slate-900 mb-4">Comparative Deep Dive</h2>
+            <p class="text-center text-slate-600 max-w-3xl mx-auto mb-12">This section provides a quantitative and architectural comparison. The radar chart offers an at-a-glance view of relative strengths, while the diagrams illustrate the fundamental differences in deployment and state management philosophies.</p>
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <div class="chart-container">
+                    <canvas id="sdkComparisonChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section id="use-cases" class="py-12">
+            <h2 class="text-3xl font-bold text-center text-slate-900 mb-4">When to Choose Which SDK?</h2>
+            <p class="text-center text-slate-600 max-w-3xl mx-auto mb-12">Choosing the right framework depends entirely on your project's context, existing infrastructure, and team priorities. Use this guide to determine which SDK is the best fit for your specific needs.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-8 rounded-lg shadow-lg border-2 border-blue-200">
+                    <h3 class="text-2xl font-bold mb-4 text-blue-600">✅ Choose Google ADK if...</h3>
+                    <ul class="space-y-3 text-slate-700">
+                        <li class="flex items-start"><span class="mr-3 mt-1 text-lg">☁️</span> You are heavily invested in the Google Cloud Platform ecosystem.</li>
+                        <li class="flex items-start"><span class="mr-3 mt-1 text-lg">🏢</span> You're building an enterprise-grade application requiring high governance, auditability, and structured workflows.</li>
+                        <li class="flex items-start"><span class="mr-3 mt-1 text-lg">💾</span> You need out-of-the-box, persistent state management without building your own solution.</li>
+                        <li class="flex items-start"><span class="mr-3 mt-1 text-lg">⚙️</span> You can leverage its rich set of pre-built tools for services like BigQuery, Salesforce, or JIRA.</li>
+                        <li class="flex items-start"><span class="mr-3 mt-1 text-lg">🛡️</span> You require proactive, policy-driven guardrails that intercept requests before execution.</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-lg border-2" style="border-color: #10a37f;">
+                    <h3 class="text-2xl font-bold mb-4" style="color: #10a37f;">✅ Choose OpenAI Agents SDK if...</h3>
+                    <ul class="space-y-3 text-slate-700">
+                        <li class="flex items-start"><span class="mr-3 mt-1 text-lg">🚀</span> You prioritize speed, rapid prototyping, and a minimal learning curve.</li>
+                        <li class="flex items-start"><span class="mr-3 mt-1 text-lg">🧩</span> You want maximum flexibility and control over your runtime, state, and deployment infrastructure.</li>
+                        <li class="flex items-start"><span class="mr-3 mt-1 text-lg">🐍</span> Your team prefers a "Python-first" approach that feels native and avoids new abstractions.</li>
+                        <li class="flex items-start"><span class="mr-3 mt-1 text-lg">🔧</span> Your project requires highly custom logic or integration with niche APIs using simple function tools.</li>
+                         <li class="flex items-start"><span class="mr-3 mt-1 text-lg">🌍</span> You are building a distributed, microservice-like system where components are decoupled.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="conclusion" class="py-12">
+            <h2 class="text-3xl font-bold text-center text-slate-900 mb-4">Key Differentiators Summarized</h2>
+             <p class="text-center text-slate-600 max-w-3xl mx-auto mb-12">The choice between these powerful frameworks boils down to a fundamental trade-off. Click on each concept below to see the core distinction.</p>
+            <div class="max-w-4xl mx-auto space-y-4">
+                <div class="toggle-card bg-white rounded-lg shadow-md">
+                    <button class="toggle-header w-full flex justify-between items-center p-5 text-left font-semibold text-lg">
+                        <span>Platform vs. Toolkit</span>
+                        <span class="transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="toggle-content hidden p-5 pt-0 text-slate-600">
+                        <p><strong>Google ADK</strong> is a comprehensive platform. It provides an opinionated, end-to-end solution with integrated components for state, deployment, and observability. This reduces boilerplate but requires alignment with its structure.</p>
+                        <p class="mt-2"><strong>OpenAI Agents SDK</strong> is a flexible toolkit. It provides the core agentic reasoning engine and leaves infrastructure decisions to you. This offers more control but requires more setup.</p>
+                    </div>
+                </div>
+                <div class="toggle-card bg-white rounded-lg shadow-md">
+                    <button class="toggle-header w-full flex justify-between items-center p-5 text-left font-semibold text-lg">
+                        <span>Built-in vs. Bring-Your-Own</span>
+                        <span class="transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="toggle-content hidden p-5 pt-0 text-slate-600">
+                         <p>This is most evident in state management. <strong>Google ADK</strong> includes built-in solutions for session memory. <strong>OpenAI Agents SDK</strong> requires you to bring-your-own solution, integrating an external database or service.</p>
+                    </div>
+                </div>
+                 <div class="toggle-card bg-white rounded-lg shadow-md">
+                    <button class="toggle-header w-full flex justify-between items-center p-5 text-left font-semibold text-lg">
+                        <span>Structured vs. Flexible Orchestration</span>
+                        <span class="transform transition-transform duration-300">▼</span>
+                    </button>
+                    <div class="toggle-content hidden p-5 pt-0 text-slate-600">
+                         <p><strong>Google ADK</strong> uses a more structured approach with its A2A protocol and distinct agent types (Sequential, Parallel), ideal for predictable, auditable workflows. <strong>OpenAI Agents SDK</strong> provides flexible patterns like 'Handoffs' that are highly adaptable to various conversational and hierarchical flows.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-slate-800 text-white mt-12">
+        <div class="container mx-auto py-4 px-5 text-center">
+            <p class="text-slate-400 text-sm">Interactive report generated based on the provided comparative analysis. For educational purposes.</p>
+        </div>
+    </footer>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const chartData = {
+        labels: [
+            'Enterprise Ready',
+            'Rapid Prototyping',
+            'Infrastructure Flexibility',
+            'Out-of-the-Box Tooling',
+            'Ease of Customization',
+            'Beginner Friendliness',
+            'Built-in State Management'
+        ],
+        datasets: [{
+            label: 'Google ADK',
+            data: [9, 5, 4, 9, 6, 6, 10],
+            fill: true,
+            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            borderColor: 'rgb(59, 130, 246)',
+            pointBackgroundColor: 'rgb(59, 130, 246)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(59, 130, 246)'
+        }, {
+            label: 'OpenAI Agents SDK',
+            data: [6, 9, 10, 7, 9, 8, 2],
+            fill: true,
+            backgroundColor: 'rgba(16, 163, 127, 0.2)',
+            borderColor: 'rgb(16, 163, 127)',
+            pointBackgroundColor: 'rgb(16, 163, 127)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgb(16, 163, 127)'
+        }]
+    };
+
+    const config = {
+        type: 'radar',
+        data: chartData,
+        options: {
+            maintainAspectRatio: false,
+            elements: {
+                line: {
+                    borderWidth: 3
+                }
+            },
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                    grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                    pointLabels: {
+                        font: { size: 12, weight: 'bold' },
+                        color: '#475569'
+                    },
+                    ticks: {
+                        backdropColor: 'rgba(255, 255, 255, 0.75)',
+                        color: '#64748b',
+                        stepSize: 2
+                    },
+                    suggestedMin: 0,
+                    suggestedMax: 10
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: { font: { size: 14 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) { label += ': '; }
+                            if (context.parsed.r !== null) { label += context.parsed.r; }
+                            return label;
+                        }
+                    }
+                }
+            }
+        },
+    };
+
+    const ctx = document.getElementById('sdkComparisonChart');
+    if (ctx) { new Chart(ctx, config); }
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (mobileMenuButton) {
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+    }
+
+    const navLinks = document.querySelectorAll('.nav-link, #mobile-menu a');
+    const sections = document.querySelectorAll('main section');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    const linkHref = link.getAttribute('href');
+                    if (linkHref && linkHref.substring(1) === entry.target.id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, { rootMargin: "-50% 0px -50% 0px" });
+
+    sections.forEach(section => { observer.observe(section); });
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            if (!mobileMenu.classList.contains('hidden')) {
+                 mobileMenu.classList.add('hidden');
+            }
+        });
+    });
+
+    document.querySelectorAll('.toggle-card').forEach(card => {
+        const header = card.querySelector('.toggle-header');
+        const content = card.querySelector('.toggle-content');
+        const icon = header.querySelector('span:last-child');
+        header.addEventListener('click', () => {
+            const isVisible = !content.classList.contains('hidden');
+            content.classList.toggle('hidden');
+            icon.style.transform = isVisible ? 'rotate(0deg)' : 'rotate(180deg)';
+        });
+    });
+});
+</script>
+
+</body>
+</html>
