@@ -7,6 +7,11 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import datetime
 import requests
 
+from PIL import Image
+from io import BytesIO
+
+import base64
+
 # tool 1 : # Get current date and time in a specified timezone
 def get_current_datetime(timezone: str = "Asia/Kolkata") -> dict:
     """Gives Current Date, time and timezone information.
@@ -58,7 +63,7 @@ def get_current_datetime(timezone: str = "Asia/Kolkata") -> dict:
 #     output_key="project_timeline"
 # )
 
-# Main Agent for monitoring construction project
+# Tool that returns image from a URL
 def fetch_image_from_url(url: str) -> dict:
     """
     Fetches an image from the given URL and returns its binary content and metadata.
@@ -74,9 +79,11 @@ def fetch_image_from_url(url: str) -> dict:
         if not content_type.startswith('image/'):
             return {"error": f"URL does not point to an image. Content-Type: {content_type}"}
         print(f"Fetched image from {url} with content type {content_type}")
+        image_bytes = response.content
+        image_base64 = base64.b64encode(image_bytes).decode('utf-8')
         return {
             "status": "success",
-            "content": response.content,
+            "image_base64": image_base64,
             "content_type": content_type,
             "url": url
         }
@@ -85,11 +92,12 @@ def fetch_image_from_url(url: str) -> dict:
 
 supervisor = Agent(
     name="supervisor",
-    model=LiteLlm(model="openai/gpt-4.1-nano"),
+    # model=LiteLlm(model="openai/gpt-4.1-nano"),
+    model="gemini-2.5-flash",
     description="Provides up-to-date information from the internet (using GPT-4.1-nano).",
     instruction=load_instruction_from_file('supervisor.txt'),
     tools=[get_current_datetime, fetch_image_from_url],
     # sub_agents=[project_explainer, timeline_explainer],
-)
+) 
 
 root_agent = supervisor
